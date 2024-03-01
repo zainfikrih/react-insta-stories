@@ -1,8 +1,8 @@
 import React, { Suspense } from "react";
 import "./App.css";
-const StoriesLazy = React.lazy(() => import("react-insta-stories"));
+const StoriesLazy = React.lazy(() => import("react-insta-stories-ng"));
 const WithSeeMore = React.lazy(() =>
-  import("react-insta-stories").then((module) => ({
+  import("react-insta-stories-ng").then((module) => ({
     default: module.WithSeeMore,
   }))
 );
