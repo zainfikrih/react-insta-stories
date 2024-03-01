@@ -13,7 +13,8 @@ export const renderer: Renderer = ({
   messageHandler,
 }) => {
   const [loaded, setLoaded] = React.useState(false);
-  const [muted, setMuted] = React.useState(false);
+  const [pause, setPause] = React.useState(false);
+  const [muted, setMuted] = React.useState(true);
   const { width, height, loader, storyStyles } = config;
 
   let computedStyles = {
@@ -21,15 +22,14 @@ export const renderer: Renderer = ({
     ...(storyStyles || {}),
   };
 
-  let vid = React.useRef<HTMLVideoElement>(null);
-
   React.useEffect(() => {
-    if (vid.current) {
+    if (loaded) {
       if (isPaused) {
-        vid.current.pause();
+        setPause(true);
       } else {
-        vid.current.play().catch(() => {});
+        setPause(false);
       }
+      setMuted(false);
     }
   }, [isPaused]);
 
@@ -37,13 +37,9 @@ export const renderer: Renderer = ({
     action("pause", true);
   };
 
-  const onPlaying = () => {
-    action("play", true);
-  };
+  const onPlaying = () => {};
 
   const videoLoaded = () => {
-    messageHandler("UPDATE_VIDEO_DURATION", { duration: vid.current.duration });
-    setLoaded(true);
     // vid.current
     //   .play()
     //   .then(() => {
@@ -57,22 +53,31 @@ export const renderer: Renderer = ({
     //   });
   };
 
+  const videoDuration = (n: number) => {
+    messageHandler("UPDATE_VIDEO_DURATION", { duration: n });
+    setLoaded(true);
+    action("play");
+    action("play", true);
+  };
+
   return (
     <WithHeader {...{ story, globalHeader: config.header }}>
       <WithSeeMore {...{ story, action }}>
         <div style={styles.videoContainer}>
           <ReactPlayer
             style={computedStyles}
+            width={"100%"}
+            height={"100%"}
             url={story.url}
             playsInline
             webkit-playsinline="true"
             playsinline={true}
             controls={false}
-            playing={!isPaused}
-            muted={true}
-            onStart={videoLoaded}
+            playing={!pause}
+            muted={muted}
             onPlay={onPlaying}
             onPause={onWaiting}
+            onDuration={videoDuration}
           />
           {!loaded && (
             <div
